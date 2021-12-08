@@ -1,0 +1,53 @@
+#!/bin/bash
+
+BLOCKS=${1:-4}
+START_POSITION=${2:-0}
+
+WIDTH=$(convert image/file -print "%w" /dev/null);
+HEIGHT=$(convert image/file -print "%h" /dev/null);
+
+width_block=$((WIDTH / BLOCKS))
+height_block=$((HEIGHT / BLOCKS))
+position=""
+
+if [ $START_POSITION -eq 0 ];then
+    gravity="NorthWest"
+    position="+0+0"
+fi
+
+if [ $START_POSITION -eq 1 ];then
+    gravity="NorthEast"
+    position="+0+0"
+fi
+
+if [ $START_POSITION -eq 2 ];then
+    gravity="SouthWest"
+    position="+0+0"
+fi
+
+if [ $START_POSITION -eq 3 ];then
+    gravity="SouthEast"
+    position="+0+0"
+fi
+
+
+echo "Original file size ${WIDTH}x${HEIGHT}"
+echo "It will cropped in ${BLOCKS} blocks"
+echo "Cutting in ${width_block}x${height_block} ascending blocks"
+echo "Start position ${position}"
+
+mkdir -p result/
+rm -rf result/*
+
+for counter in $(seq 1 ${BLOCKS}); do
+
+    width_to_crop=$(($width_block*$counter))
+    height_to_crop=$(($height_block*$counter))
+
+    echo "Cropping file ${counter}"
+    convert image/file -gravity ${gravity} -crop ${width_to_crop}x${height_to_crop}${position} result/file-${counter}.jpg
+    convert result/file-${counter}.jpg -background black -gravity ${gravity} -extent ${WIDTH}x${HEIGHT} result/file-${counter}.jpg
+
+done
+
+
